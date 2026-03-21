@@ -1,1 +1,1 @@
-# dal-syllabus-db
+# Dalhousie Syllabi Database
