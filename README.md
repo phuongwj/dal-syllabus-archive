@@ -1,1 +1,1 @@
-# Dalhousie Syllabi Database
+# Dalhousie Syllabus Database
