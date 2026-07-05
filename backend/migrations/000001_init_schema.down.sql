@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS syllabi;
+DROP TABLE IF EXISTS otp_codes;
