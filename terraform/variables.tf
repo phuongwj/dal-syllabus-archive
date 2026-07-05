@@ -28,9 +28,8 @@ variable "admin_emails" {
   sensitive   = true
 }
 
-variable "frontend_url" {
-  description = "Frontend origin for CORS (no trailing slash). Defaults to the shared GCS path-style origin; override once a custom domain / load balancer is in front."
-  default     = "https://storage.googleapis.com"
+variable "domain" {
+  description = "Domain served by the load balancer (e.g. dalsyllabus.phuongpham.co). Used for the managed SSL cert and as the single frontend/API origin. You must point an A record at the LB IP after apply."
 }
 
 variable "resend_from_email" {

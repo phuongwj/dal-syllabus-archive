@@ -115,10 +115,11 @@ resource "google_cloud_run_v2_service" "backend" {
                 value = var.admin_emails
             }
 
-            # CORS allowlist origin; the frontend sends credentials so this can't be "*".
+            # Behind the LB the frontend and API share this one origin, so it's both the
+            # CORS allowlist value and where the browser loads the site from.
             env {
                 name  = "FRONTEND_URL"
-                value = var.frontend_url
+                value = "https://${var.domain}"
             }
 
             env {

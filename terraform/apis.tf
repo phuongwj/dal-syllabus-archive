@@ -29,11 +29,11 @@ resource "google_project_service" "cloud_resource_manager" {
   disable_on_destroy = false
 }
 
-# TODO once we have base
-
-# resource "google_project_service" "compute" {
-#   service = "compute.googleapis.com"
-# }
+# Needed for all load balancer resources (global IP, backend bucket/service, NEG,
+# URL map, proxies, forwarding rules, managed SSL cert).
+resource "google_project_service" "compute" {
+  service = "compute.googleapis.com"
+}
 
 # resource "google_project_service" "monitoring" {
 #   service = "monitoring.googleapis.com"
