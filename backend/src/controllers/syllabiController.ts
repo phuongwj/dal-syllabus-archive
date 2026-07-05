@@ -41,6 +41,8 @@ export const getSyllabi = async (req: Request, res: Response) => {
 
     try {
         const normalizedCourse = course.replace(/\s+/g, "");
+        // % is SQL's ILIKE wildcard, not a literal char — this becomes "match
+        // anywhere in the string", so "csci3171" matches stored "CSCI 3171"
         const result = await pool.query(query, [`%${normalizedCourse}%`]);
         res.status(200).json(result.rows);
     } catch (error) {
