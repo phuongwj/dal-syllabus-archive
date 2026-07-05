@@ -70,7 +70,7 @@ export default function SearchPage() {
                         <ul className="divide-y divide-neutral-200">
                             {results.map((r) => (
                                 <li key={r.id} className="py-3">
-                                    <a href={`/syllabi?id=${r.id}`} className="hover:underline">
+                                    <a href={`/syllabi/?id=${r.id}`} className="hover:underline">
                                         <span className="font-semibold">
                                             {r.course_code}, {r.term}
                                         </span>{" "}
