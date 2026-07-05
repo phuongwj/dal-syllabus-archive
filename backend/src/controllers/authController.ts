@@ -73,10 +73,14 @@ export const verifyOtp = async (req: Request, res: Response) => {
 
         await pool.query("DELETE FROM otp_codes WHERE id = $1", [otpId]);
 
-        // httpOnly so JS on the frontend can never read the token, only send it
+        // httpOnly so JS on the frontend can never read the token, only send it.
+        // SameSite=None + Secure is required because the frontend (GCS bucket origin)
+        // and this API (run.app) are different sites — a Lax cookie wouldn't be sent
+        // on cross-site requests. localhost is a secure context, so this also works locally.
         res.cookie("token", signToken(email), {
             httpOnly: true,
-            sameSite: "lax",
+            sameSite: "none",
+            secure: true,
             maxAge: 2 * 60 * 60 * 1000, // 2 hour session
         });
 
@@ -91,6 +95,7 @@ export const getMe = (req: AuthRequest, res: Response) => {
 };
 
 export const logOut = (_req: Request, res: Response) => {
-    res.clearCookie("token");
+    // Must match the attributes used when the cookie was set, or it won't clear.
+    res.clearCookie("token", { httpOnly: true, sameSite: "none", secure: true });
     res.status(200).json({ message: "Logged out successfully" });
 };
