@@ -1,0 +1,30 @@
+---
+import "../styles/global.css";
+import NavAuthStatus from "../components/NavAuthStatus.tsx";
+
+interface Props {
+    title?: string;
+}
+
+const { title = "Dal Syllabus Archive" } = Astro.props;
+---
+
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>{title}</title>
+    </head>
+    <body class="bg-white text-neutral-900 font-sans">
+        <div class="max-w-2xl mx-auto px-6 py-16">
+            <nav class="mb-8 flex items-center justify-between text-sm text-neutral-600">
+                <div class="flex gap-4">
+                    <a href="/" class="hover:underline">Search</a>
+                    <a href="/upload" class="hover:underline">Upload a Syllabus</a>
+                </div>
+                <NavAuthStatus client:load />
+            </nav>
+            <slot />
+        </div>
+    </body>
+</html>
