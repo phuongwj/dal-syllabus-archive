@@ -14,13 +14,22 @@ resource "google_compute_global_address" "lb_ip" {
 }
 
 # ---- Frontend: backend bucket ----
-# Honors the bucket's website config (index.html / 404.html). enable_cdn can be
-# flipped to true later to turn on Cloud CDN with no other change.
+# Honors the bucket's website config (index.html / 404.html). Cloud CDN caches the
+# static frontend at Google's edge, so repeat visitors are served from a nearby POP
+# instead of hitting the bucket each time.
 resource "google_compute_backend_bucket" "frontend" {
     name        = "dal-syllabus-frontend-backend"
     bucket_name = google_storage_bucket.frontend.name
-    enable_cdn  = false
-    depends_on  = [google_project_service.compute]
+    enable_cdn  = true
+
+    cdn_policy {
+        cache_mode  = "CACHE_ALL_STATIC"
+        default_ttl = 3600   # 1h for static assets
+        client_ttl  = 3600
+        max_ttl     = 86400  # 1 day ceiling
+    }
+
+    depends_on = [google_project_service.compute]
 }
 
 # ---- API: serverless NEG -> backend service ----
