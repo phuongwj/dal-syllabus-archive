@@ -20,6 +20,16 @@ export default function AdminPage() {
     const [pending, setPending] = useState<PendingSyllabus[]>([]);
     const [actionError, setActionError] = useState<string | null>(null);
     const [busyId, setBusyId] = useState<string | null>(null);
+    const [deniedEmail, setDeniedEmail] = useState<string | null>(null);
+
+    const handleLogout = async () => {
+        try {
+            await fetch(`${API_URL}/api/auth/logout`, { method: "POST", credentials: "include" });
+        } finally {
+            // Reload so the page re-checks auth and drops back to the admin login.
+            window.location.reload();
+        }
+    };
 
     const loadPending = async () => {
         try {
@@ -29,6 +39,13 @@ export default function AdminPage() {
                 return;
             }
             if (res.status === 403) {
+                // Logged in, but not an admin — find out who, so we can tell them to switch.
+                try {
+                    const me = await fetch(`${API_URL}/api/auth/me`, { credentials: "include" });
+                    if (me.ok) setDeniedEmail((await me.json()).email ?? null);
+                } catch {
+                    /* leave deniedEmail null */
+                }
                 setStage("denied");
                 return;
             }
@@ -90,12 +107,39 @@ export default function AdminPage() {
         return (
             <div>
                 <h1 className="text-2xl font-semibold mb-6">Admin Sign In</h1>
-                <OtpLogin onVerified={() => loadPending()} />
+                <OtpLogin
+                    onVerified={() => loadPending()}
+                    emailLabel={null}
+                    emailPlaceholder="Enter your email"
+                    emailHint={null}
+                />
             </div>
         );
     }
 
-    if (stage === "denied") return <p className="text-neutral-500">You don't have admin access.</p>;
+    if (stage === "denied") {
+        return (
+            <div>
+                <h1 className="text-2xl font-semibold mb-4">Admin Sign In</h1>
+                <p className="mb-4 text-neutral-700">
+                    You're signed in
+                    {deniedEmail ? (
+                        <>
+                            {" "}as <strong>{deniedEmail}</strong>
+                        </>
+                    ) : null}
+                    , which isn't an admin account. To access the admin queue, please log out first,
+                    then sign in with an admin email.
+                </p>
+                <button
+                    onClick={handleLogout}
+                    className="rounded-md bg-neutral-900 px-5 py-2 text-base text-white hover:bg-neutral-700"
+                >
+                    Log out
+                </button>
+            </div>
+        );
+    }
 
     return (
         <div>

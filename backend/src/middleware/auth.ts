@@ -23,11 +23,14 @@ export const auth = (req: AuthRequest, res: Response, next: NextFunction) => {
     }
 };
 
-export const isAdmin = (req: AuthRequest, res: Response, next: NextFunction) => {
+export const isAdminEmail = (email: string | undefined): boolean => {
+    if (!email) return false;
     const adminEmails = (process.env.ADMIN_EMAILS || "").split(",").map((e) => e.trim().toLowerCase());
-    const email = req.user?.email?.toLowerCase();
+    return adminEmails.includes(email.trim().toLowerCase());
+};
 
-    if (!email || !adminEmails.includes(email)) {
+export const isAdmin = (req: AuthRequest, res: Response, next: NextFunction) => {
+    if (!isAdminEmail(req.user?.email)) {
         return res.status(403).json({ error: "Admin access required" });
     }
 

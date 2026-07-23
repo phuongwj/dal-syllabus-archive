@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { SubmitEvent } from "react";
 
 import OtpLogin from "./OtpLogin";
@@ -34,6 +34,14 @@ export default function UploadPage() {
     const [uploadError, setUploadError] = useState<string | null>(null);
     const [uploadLoading, setUploadLoading] = useState(false);
     const [uploadSuccess, setUploadSuccess] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // Resetting the input's value lets the user pick the *same* file again after
+    // removing it (otherwise the browser skips the change event for an identical file).
+    const clearFile = () => {
+        setFile(null);
+        if (fileInputRef.current) fileInputRef.current.value = "";
+    };
 
     useEffect(() => {
         (async () => {
@@ -58,7 +66,7 @@ export default function UploadPage() {
 
         const formData = new FormData();
         formData.append("course_code", courseCode);
-        if (courseName) formData.append("course_name", courseName);
+        formData.append("course_name", courseName);
         formData.append("term", term);
         formData.append("professor", professor);
         formData.append("pdf", file);
@@ -86,7 +94,7 @@ export default function UploadPage() {
         setCourseName("");
         setTerm(TERM_OPTIONS[0]);
         setProfessor("");
-        setFile(null);
+        clearFile();
         setUploadSuccess(false);
         setUploadError(null);
     };
@@ -98,7 +106,11 @@ export default function UploadPage() {
     if (stage === "loggedOut") {
         return (
             <div>
-                <h1 className="text-2xl font-semibold mb-6">Upload a Syllabus</h1>
+                <h1 className="text-2xl font-semibold mb-2">Upload a Syllabus</h1>
+                <p className="mb-6 text-sm text-neutral-600">
+                    Only Dalhousie students can upload syllabi. Sign in with your Dalhousie NetID
+                    email to continue.
+                </p>
                 <OtpLogin onVerified={() => setStage("authenticated")} />
             </div>
         );
@@ -123,7 +135,9 @@ export default function UploadPage() {
             <h1 className="text-2xl font-semibold mb-6">Upload a Syllabus</h1>
             <form onSubmit={handleUpload} className="space-y-4">
                 <div>
-                    <label className="mb-1 block text-sm font-medium">Course code</label>
+                    <label className="mb-1 block text-sm font-medium">
+                        Course code <span className="text-red-600">*</span>
+                    </label>
                     <input
                         type="text"
                         value={courseCode}
@@ -135,18 +149,23 @@ export default function UploadPage() {
                 </div>
 
                 <div>
-                    <label className="mb-1 block text-sm font-medium">Course name (optional)</label>
+                    <label className="mb-1 block text-sm font-medium">
+                        Course name <span className="text-red-600">*</span>
+                    </label>
                     <input
                         type="text"
                         value={courseName}
                         onChange={(e) => setCourseName(e.target.value)}
                         placeholder="Algorithms and Data Structures"
+                        required
                         className={inputClass}
                     />
                 </div>
 
                 <div>
-                    <label className="mb-1 block text-sm font-medium">Term</label>
+                    <label className="mb-1 block text-sm font-medium">
+                        Term <span className="text-red-600">*</span>
+                    </label>
                     <select value={term} onChange={(e) => setTerm(e.target.value)} className={inputClass}>
                         {TERM_OPTIONS.map((t) => (
                             <option key={t} value={t}>
@@ -157,7 +176,9 @@ export default function UploadPage() {
                 </div>
 
                 <div>
-                    <label className="mb-1 block text-sm font-medium">Professor</label>
+                    <label className="mb-1 block text-sm font-medium">
+                        Professor <span className="text-red-600">*</span>
+                    </label>
                     <input
                         type="text"
                         value={professor}
@@ -169,14 +190,54 @@ export default function UploadPage() {
                 </div>
 
                 <div>
-                    <label className="mb-1 block text-sm font-medium">Syllabus PDF</label>
+                    <label className="mb-1 block text-sm font-medium">
+                        Syllabus PDF <span className="text-red-600">*</span>
+                    </label>
+
+                    {/* Hidden native input; we drive it with our own buttons so the
+                        user can replace or remove the chosen file. */}
                     <input
+                        ref={fileInputRef}
                         type="file"
                         accept="application/pdf"
                         onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-                        required
-                        className="w-full text-sm"
+                        className="hidden"
                     />
+
+                    {file ? (
+                        <div className="flex items-center justify-between gap-3 rounded-md border border-neutral-300 px-3 py-2">
+                            <span className="truncate text-sm">
+                                {file.name}{" "}
+                                <span className="text-neutral-400">
+                                    ({(file.size / 1024 / 1024).toFixed(1)} MB)
+                                </span>
+                            </span>
+                            <div className="flex shrink-0 gap-3 text-sm">
+                                <button
+                                    type="button"
+                                    onClick={() => fileInputRef.current?.click()}
+                                    className="text-blue-600 hover:underline"
+                                >
+                                    Replace
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={clearFile}
+                                    className="text-red-600 hover:underline"
+                                >
+                                    Remove
+                                </button>
+                            </div>
+                        </div>
+                    ) : (
+                        <button
+                            type="button"
+                            onClick={() => fileInputRef.current?.click()}
+                            className="rounded-md border border-neutral-300 px-4 py-2 text-sm hover:bg-neutral-50"
+                        >
+                            Choose PDF
+                        </button>
+                    )}
                 </div>
 
                 {uploadError && <p className="text-sm text-red-600">{uploadError}</p>}

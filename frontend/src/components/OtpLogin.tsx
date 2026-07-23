@@ -9,9 +9,17 @@ const buttonClass =
 
 interface OtpLoginProps {
     onVerified: (email: string) => void;
+    emailLabel?: string | null;
+    emailPlaceholder?: string;
+    emailHint?: string | null;
 }
 
-export default function OtpLogin({ onVerified }: OtpLoginProps) {
+export default function OtpLogin({
+    onVerified,
+    emailLabel = "Dalhousie NetID email",
+    emailPlaceholder = "ab123456@dal.ca",
+    emailHint = "Use your NetID email (two letters + six digits), e.g. ab123456@dal.ca — not your name alias.",
+}: OtpLoginProps) {
     const [stage, setStage] = useState<"email" | "code">("email");
     const [email, setEmail] = useState("");
     const [code, setCode] = useState("");
@@ -68,15 +76,16 @@ export default function OtpLogin({ onVerified }: OtpLoginProps) {
     if (stage === "email") {
         return (
             <form onSubmit={handleSendCode} className="space-y-3">
-                <label className="block text-sm font-medium">Dalhousie email</label>
+                {emailLabel && <label className="block text-sm font-medium">{emailLabel}</label>}
                 <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="you@dal.ca"
+                    placeholder={emailPlaceholder}
                     required
                     className={inputClass}
                 />
+                {emailHint && <p className="text-xs text-neutral-500">{emailHint}</p>}
                 <button type="submit" disabled={loading} className={buttonClass}>
                     {loading ? "Sending…" : "Send Code"}
                 </button>

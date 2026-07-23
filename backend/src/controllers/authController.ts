@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { Resend } from "resend";
 
 import pool from "../db.js";
-import { signToken, AuthRequest } from "../middleware/auth.js";
+import { signToken, isAdminEmail, AuthRequest } from "../middleware/auth.js";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -17,11 +17,14 @@ export const sendOtp = async (req: Request, res: Response) => {
         return res.status(400).json({ error: "Email is required" });
     }
 
-    // Dal's mail server is quarantining our OTP emails, so we're testing with
-    // non-@dal.ca inboxes for now. Turn off before deploying.
+    // Users must use a real Dalhousie NetID email: two letters followed by six
+    // digits, e.g. ab123456@dal.ca.
     const skipDomainCheck = process.env.SKIP_EMAIL_DOMAIN_CHECK === "true";
-    if (!skipDomainCheck && !email.toLowerCase().endsWith("@dal.ca")) {
-        return res.status(400).json({ error: "A valid @dal.ca email is required" });
+    const isDalNetId = /^[a-z]{2}\d{6}@dal\.ca$/.test(email.trim().toLowerCase());
+    if (!skipDomainCheck && !isDalNetId && !isAdminEmail(email)) {
+        return res.status(400).json({
+            error: "Enter your Dalhousie NetID email (e.g. ab123456@dal.ca)",
+        });
     }
 
     const code = generateCode(); // 6-digit code to email to the student
