@@ -45,6 +45,9 @@ resource "google_cloud_run_v2_service" "backend" {
     name = "dal-syllabus-api"
     location = var.region
 
+    # Provider defaults this to true; false lets `terraform destroy` remove the service.
+    deletion_protection = false
+
     depends_on = [google_project_service.cloud_run]
 
     template {

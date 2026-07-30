@@ -5,6 +5,9 @@ resource "google_storage_bucket" "syllabus_files" {
 
     depends_on = [google_project_service.cloud_storage]
 
+    # Allow `terraform destroy` to delete the bucket even if it still holds objects.
+    force_destroy = true
+
     uniform_bucket_level_access = true
 
     # Guarantees that files are only accessible via signed URLs
@@ -17,6 +20,9 @@ resource "google_storage_bucket" "frontend" {
     location = var.region
 
     depends_on = [google_project_service.cloud_storage]
+
+    # Allow `terraform destroy` to delete the bucket even if it still holds objects.
+    force_destroy = true
 
     uniform_bucket_level_access = true
 
